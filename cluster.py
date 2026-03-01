@@ -1,6 +1,5 @@
 import numpy as np
-import torch
-
+import matplotlib.pyplot as plt
 # load the data
 data = np.loadtxt('data_clean.csv', delimiter=',')
 print(f"data shape: {data.shape}")
@@ -20,13 +19,30 @@ gamma = 1.0
 similarity_matrix = np.exp(-gamma * Dist_sq) #formula
 print("Eucledian distance matrix Shape:", Dist.shape)
 
+## use knn to construct a graph
+k_neighbors = 8
+nearest = np.argsort(Dist, axis=1) # sorts the index of each distance increasingly
+nearest = nearest[:, 1:k_neighbors+1] # get only the k_neighbors columns, which is 10 here
+A = np.zeros_like(Dist, dtype=int) # make a matrix full of zeros 500x500
+for i in range(data.shape[0]):
+    A[i, nearest[i]] = 1 # set the "nearest[i]" indices of the row i to 1
+A = np.maximum(A, A.T) #fix symmetry
+np.fill_diagonal(A, 0) # make sure no point is connected to itself
 
-## now lets compute the adjacency matrix using epsilon thresholding
-epsilon = 0.82
-A_bool = Dist < epsilon # boolean mask
-A = A_bool.astype(int)
-np.fill_diagonal(A, 0) # reset the diagonal
-print(A[0])
+plt.figure(figsize=(8, 8))
+plt.scatter(data[:, 0], data[:, 1], s=10, c='black')
+
+# draw a line for every connection in A
+for i in range(data.shape[0]):
+    for j in range(i+1, data.shape[0]):  # i+1 to avoid drawing each edge twice
+        if A[i, j] == 1:
+            plt.plot([data[i, 0], data[j, 0]], 
+                     [data[i, 1], data[j, 1]], 
+                     c='blue', alpha=0.1, linewidth=0.5)
+
+plt.title(f"KNN Graph (k={k_neighbors})")
+plt.show()
+
 
 ## compute the degree matrix
 degrees = np.sum(A, axis=0)
@@ -34,6 +50,9 @@ D = np.diag(degrees)
 
 print("Degree matrix Shape:", D.shape)
 print("Degree of p0:", D[0, 0])
+
+print(f"Min degree: {degrees.min()}, Max degree: {degrees.max()}, Mean: {degrees.mean():.1f}")
+print(f"Isolated points (degree 0): {np.sum(degrees == 0)}")
 
 
 
@@ -53,11 +72,39 @@ print(f"Eigenvectors:{eigenvectors} ")
 # we don't know how many clusters are there. so we use something called the "eigengap heuristic"
 gaps = np.diff(eigenvalues)
 optimal_k = np.argmax(gaps) + 1
-print(f"The optimal number of clusters is: {optimal_k}")
+
+print(f"First 10 eigenvalues: {eigenvalues[:10]}")
+print(f"Gaps: {gaps[:10]}")
+print(f"optimal_k: {optimal_k}")
 
 
-def numpy_kmeans(data, k, num_iters=150):
+
+# get the first k eigenvectors
+k_eigenvectors = eigenvectors[:,:2]
+print(f"k_eigenvectors shape: {k_eigenvectors.shape}")
+print(f"First 5 rows of k_eigenvectors:\n{k_eigenvectors[:5]}")
+
+def numpy_kmeans(eigenvector_data, k, num_iter=150):
     # choose k random starting points
-    random_indices = np.random.choice(data.shape[0], size=k, replace=False)
-    centroids = data[random_indices]
+    random_indices = np.random.choice(eigenvector_data.shape[0], size=k, replace=False)
+    centroids = eigenvector_data[random_indices]
+    labels = None
+    for _ in range(num_iter):
+        difference = eigenvector_data[:, np.newaxis, :] - centroids # use broadcasting to compute difference vectors
+        distances = np.sqrt(np.sum(difference**2, axis=2)) # compute eucledian distance
+        labels = np.argmin(distances, axis=1) # choose the min distance centroid for each point
+        for j in range(k):
+            mask = (labels == j)          # boolean array gives us a boolean mask where True is only j values
+            centroids[j] = eigenvector_data[mask].mean(axis=0) # recompute centroids
     
+    return centroids, labels
+
+centroids, labels = numpy_kmeans(k_eigenvectors, 2)
+print(f"Cluster sizes: {[np.sum(labels == i) for i in range(2)]}")
+
+
+    
+
+plt.scatter(data[:, 0], data[:, 1], c=labels)
+plt.title("Spectral Clustering")
+plt.show()
