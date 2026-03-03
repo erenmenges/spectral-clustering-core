@@ -45,6 +45,7 @@ header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
 
 /* ── Mobile ─────────────────────────────────────────────────────── */
 @media (max-width: 768px) {{
+    /* Plot columns: stack vertically */
     [data-testid="stHorizontalBlock"] {{
         flex-wrap: wrap !important;
     }}
@@ -53,6 +54,21 @@ header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
         flex: 1 1 100% !important;
         min-width: 100% !important;
     }}
+
+    /* Nav bar (4-column block): dots on top, buttons in a row */
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:nth-child(2) {{
+        order: -1 !important;
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }}
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:nth-child(1),
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:nth-child(3),
+    [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:nth-child(4) {{
+        flex: 1 1 0 !important;
+        min-width: 0 !important;
+        width: auto !important;
+    }}
+
     .block-container {{
         padding-left: 0.75rem !important;
         padding-right: 0.75rem !important;
@@ -67,7 +83,9 @@ header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
         overflow-y: hidden !important;
         -webkit-overflow-scrolling: touch;
     }}
-    div.stButton > button {{
+    div.stButton > button,
+    [data-testid="baseButton-secondary"] {{
+        width: 100% !important;
         min-height: 2.8rem;
         font-size: 0.95rem;
     }}
