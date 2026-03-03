@@ -42,6 +42,36 @@ header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
 .stAppViewBlockContainer {{padding-top:1rem;}}
 [data-testid="manage-app-button"] {{display:none;}}
 .viewerBadge_container__r5tak {{display:none;}}
+
+/* ── Mobile ─────────────────────────────────────────────────────── */
+@media (max-width: 768px) {{
+    [data-testid="stHorizontalBlock"] {{
+        flex-wrap: wrap !important;
+    }}
+    [data-testid="column"] {{
+        width: 100% !important;
+        flex: 1 1 100% !important;
+        min-width: 100% !important;
+    }}
+    .block-container {{
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }}
+    .mobile-subtitle {{
+        display: block !important;
+        margin-left: 0 !important;
+        margin-top: 0.25rem;
+    }}
+    .katex-display {{
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+    }}
+    div.stButton > button {{
+        min-height: 2.8rem;
+        font-size: 0.95rem;
+    }}
+}}
 </style>""", unsafe_allow_html=True)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -168,7 +198,7 @@ st.markdown(
     f'<div style="margin-bottom:0.2rem;">'
     f'<span style="font-size:1.8rem;font-weight:700;letter-spacing:-0.03em;">'
     f'The Beauty of Spectral Clustering</span>'
-    f'<span style="color:{MUTED};font-size:0.85rem;margin-left:12px;">'
+    f'<span class="mobile-subtitle" style="color:{MUTED};font-size:0.85rem;margin-left:12px;">'
     f'from scratch with NumPy &mdash; '
     f'{shape} · noise {noise:.3f} · {data.shape[0]} pts'
     f'</span></div>',
