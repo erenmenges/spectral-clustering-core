@@ -43,30 +43,19 @@ header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
 [data-testid="manage-app-button"] {{display:none;}}
 .viewerBadge_container__r5tak {{display:none;}}
 
+/* ── Mobile-only elements: hidden by default ───────────────────── */
+.mob-only {{ display: none !important; }}
+
 /* ── Mobile ─────────────────────────────────────────────────────── */
 @media (max-width: 768px) {{
-    /* Plot columns: stack vertically */
+    /* Stack all column layouts vertically */
     [data-testid="stHorizontalBlock"] {{
-        flex-wrap: wrap !important;
+        flex-direction: column !important;
     }}
-    [data-testid="column"] {{
+    [data-testid="stHorizontalBlock"] > * {{
         width: 100% !important;
-        flex: 1 1 100% !important;
-        min-width: 100% !important;
-    }}
-
-    /* Nav bar (4-column block): dots on top, buttons in a row */
-    [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:nth-child(2) {{
-        order: -1 !important;
-        flex: 1 1 100% !important;
-        min-width: 100% !important;
-    }}
-    [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:nth-child(1),
-    [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:nth-child(3),
-    [data-testid="stHorizontalBlock"]:has(> [data-testid="column"]:nth-child(4)) > [data-testid="column"]:nth-child(4) {{
-        flex: 1 1 0 !important;
-        min-width: 0 !important;
-        width: auto !important;
+        max-width: 100% !important;
+        flex: none !important;
     }}
 
     .block-container {{
@@ -83,11 +72,41 @@ header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
         overflow-y: hidden !important;
         -webkit-overflow-scrolling: touch;
     }}
-    div.stButton > button,
-    [data-testid="baseButton-secondary"] {{
+    .block-container button {{
         width: 100% !important;
-        min-height: 2.8rem;
-        font-size: 0.95rem;
+        min-height: 2.8rem !important;
+        font-size: 0.95rem !important;
+    }}
+
+    /* Show mobile-only elements */
+    .mob-only {{ display: block !important; }}
+}}
+
+/* ── Progressive: swap navs on mobile if :has() supported ──────── */
+@supports selector(:has(*)) {{
+    /* Desktop: hide the 3-col mobile nav (has 3 children, not 4) */
+    [data-testid="stHorizontalBlock"]:has(> :nth-child(3)):not(:has(> :nth-child(4))) {{
+        display: none !important;
+    }}
+
+    @media (max-width: 768px) {{
+        /* Show 3-col mobile nav as a horizontal row */
+        [data-testid="stHorizontalBlock"]:has(> :nth-child(3)):not(:has(> :nth-child(4))) {{
+            display: flex !important;
+            flex-direction: row !important;
+            gap: 0.5rem !important;
+        }}
+        [data-testid="stHorizontalBlock"]:has(> :nth-child(3)):not(:has(> :nth-child(4))) > * {{
+            flex: 1 1 0 !important;
+            width: auto !important;
+            max-width: none !important;
+            min-width: 0 !important;
+        }}
+
+        /* Hide the 4-col desktop nav */
+        [data-testid="stHorizontalBlock"]:has(> :nth-child(4)) {{
+            display: none !important;
+        }}
     }}
 }}
 </style>""", unsafe_allow_html=True)
@@ -385,24 +404,37 @@ with right:
 
 st.markdown("---")
 
+dots = ''.join(
+    f'<span style="color:{ACCENT if i == s else MUTED};'
+    f'font-size:0.6rem;margin:0 5px;">●</span>'
+    for i in range(N)
+)
+dots_html = (
+    f'<div style="text-align:center;padding-top:0.45rem;">'
+    f'{dots}<br>'
+    f'<span style="color:{MUTED};font-size:0.8rem;">'
+    f'Step {s + 1} of {N}</span></div>'
+)
+
+# Mobile nav: dots on own row, then 3 horizontal buttons
+st.markdown(f'<div class="mob-only">{dots_html}</div>', unsafe_allow_html=True)
+
+mob_l, mob_m, mob_r = st.columns(3)
+with mob_l:
+    st.button("◀  Back", key="mob_back", on_click=go_back, disabled=(s == 0))
+with mob_m:
+    st.button("⏭  Result", key="mob_skip", on_click=go_end, disabled=(s == N - 1))
+with mob_r:
+    st.button("Next  ▶", key="mob_next", on_click=go_next, disabled=(s == N - 1))
+
+# Desktop nav: original 4-column layout
 nav_l, nav_m, nav_skip, nav_r = st.columns([1, 2, 1, 1])
 
 with nav_l:
     st.button("◀  Back", on_click=go_back, disabled=(s == 0))
 
 with nav_m:
-    dots = ''.join(
-        f'<span style="color:{ACCENT if i == s else MUTED};'
-        f'font-size:0.6rem;margin:0 5px;">●</span>'
-        for i in range(N)
-    )
-    st.markdown(
-        f'<div style="text-align:center;padding-top:0.45rem;">'
-        f'{dots}<br>'
-        f'<span style="color:{MUTED};font-size:0.8rem;">'
-        f'Step {s + 1} of {N}</span></div>',
-        unsafe_allow_html=True,
-    )
+    st.markdown(dots_html, unsafe_allow_html=True)
 
 with nav_skip:
     st.button("⏭  Result", on_click=go_end, disabled=(s == N - 1))
