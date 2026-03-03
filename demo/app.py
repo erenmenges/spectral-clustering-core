@@ -36,7 +36,8 @@ st.markdown(f"""<style>
 .block-container {{padding-top:1rem; padding-bottom:0;}}
 hr {{border-color:{SURFACE} !important; margin:0.4rem 0 !important;}}
 div.stButton > button {{width:100%;}}
-.block-container img {{max-height:60vh; object-fit:contain;}}
+.block-container img {{max-height:55vh; object-fit:contain;}}
+[data-testid="stStyledFullScreenFrame"] {{max-height:58vh; overflow:hidden;}}
 .stAppDeployButton {{display:none;}}
 header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
 .stAppViewBlockContainer {{padding-top:1rem;}}
@@ -80,6 +81,11 @@ header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
 
     /* Show mobile-only elements */
     .mob-only {{ display: block !important; }}
+
+    /* Push content above Streamlit footer */
+    .block-container {{ padding-bottom: 4rem !important; }}
+    footer {{ display: none !important; }}
+    [data-testid="stBottom"] {{ display: none !important; }}
 }}
 
 /* ── Progressive: swap navs on mobile if :has() supported ──────── */
@@ -376,7 +382,7 @@ with right:
 
     elif s == 3:
         col_label("Eigenvector Space")
-        fig, ax = dark_fig(5, 5)
+        fig, ax = dark_fig(5, 4)
         ax.scatter(
             evecs[:, 0], evecs[:, 1],
             c=labels_sc, cmap=CMAP, s=14, alpha=0.85, edgecolors='none',
