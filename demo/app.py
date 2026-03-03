@@ -39,6 +39,9 @@ div.stButton > button {{width:100%;}}
 .block-container img {{max-height:60vh; object-fit:contain;}}
 .stAppDeployButton {{display:none;}}
 header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
+.stAppViewBlockContainer {{padding-top:1rem;}}
+[data-testid="manage-app-button"] {{display:none;}}
+.viewerBadge_container__r5tak {{display:none;}}
 </style>""", unsafe_allow_html=True)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
@@ -96,27 +99,31 @@ with st.sidebar:
 
 k_neighbors = 10
 
-# ── Data ──────────────────────────────────────────────────────────────────────
+# ── Data & algorithms (cached) ───────────────────────────────────────────────
 
-generators = {
-    "Rings":   lambda n: make_circles_np(500, factor=0.5, noise=n, random_state=42)[0],
-    "Moons":   lambda n: make_moons_np(500, noise=n, random_state=42)[0],
-    "Spirals": lambda n: make_spirals(500, noise=n, random_state=42)[0],
-}
-data = generators[shape](noise)
+@st.cache_data(show_spinner=False)
+def run_clustering(shape_name, noise_val, k_nn):
+    generators = {
+        "Rings":   lambda n: make_circles_np(500, factor=0.5, noise=n, random_state=42)[0],
+        "Moons":   lambda n: make_moons_np(500, noise=n, random_state=42)[0],
+        "Spirals": lambda n: make_spirals(500, noise=n, random_state=42)[0],
+    }
+    data = generators[shape_name](noise_val)
 
-# ── Run algorithms ────────────────────────────────────────────────────────────
+    with contextlib.redirect_stdout(io.StringIO()), warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        labels_km, _, fig_km = kmeans_clustering(data.copy(), k=2)
+        labels_sc, data_sc, fig_knn, fig_sc, info = spectral_clustering(
+            data.copy(), k_neighbors=k_nn,
+        )
 
-with contextlib.redirect_stdout(io.StringIO()), warnings.catch_warnings():
-    warnings.simplefilter("ignore", RuntimeWarning)
-    labels_km, _, fig_km = kmeans_clustering(data.copy(), k=2)
-    labels_sc, data_sc, fig_knn, fig_sc, info = spectral_clustering(
-        data.copy(), k_neighbors=k_neighbors,
-    )
+    plt.close(fig_km)
+    plt.close(fig_sc)
+    plt.close(fig_knn)
 
-plt.close(fig_km)
-plt.close(fig_sc)
-plt.close(fig_knn)
+    return data, labels_km, labels_sc, data_sc, info
+
+data, labels_km, labels_sc, data_sc, info = run_clustering(shape, noise, k_neighbors)
 
 A     = info['adjacency_matrix']
 evals = info['eigenvalues']
