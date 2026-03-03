@@ -9,6 +9,10 @@ __pycache__/
 venv/
 env/
 .env
+.python_version
 
 .vscode/
 .cursor/
+
+data_clean.csv
+data_noisy.csv

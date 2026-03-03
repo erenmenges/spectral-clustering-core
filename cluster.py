@@ -4,8 +4,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-def numpy_kmeans(eigenvector_data, k, num_iter=150):
-    # choose k random starting points
+def numpy_kmeans(eigenvector_data, k, num_iter=150, random_state=42):
+    np.random.seed(random_state)
     random_indices = np.random.choice(eigenvector_data.shape[0], size=k, replace=False)
     centroids = eigenvector_data[random_indices]
     labels = None
@@ -15,15 +15,15 @@ def numpy_kmeans(eigenvector_data, k, num_iter=150):
         labels = np.argmin(distances, axis=1) # choose the min distance centroid for each point
         for j in range(k):
             mask = (labels == j)          # boolean array gives us a boolean mask where True is only j values
-            centroids[j] = eigenvector_data[mask].mean(axis=0) # recompute centroids
+            if mask.any():
+                centroids[j] = eigenvector_data[mask].mean(axis=0) # recompute centroids
     
     return centroids, labels
 
-def spectral_clustering(data, k_neighbors=10, optimal_k=2, gamma=1.0):
+def spectral_clustering(data, k_neighbors=10, optimal_k=2):
     print(f"data shape: {data.shape}")
 
-    # start computing similarity matrix 
-    # G will be data.m x data.m
+    # compute pairwise squared distances via the Gram matrix
     G = np.dot(data, data.T)
     # take the diagonal values out (dot products with themselves) and make it a column vector
     S = np.diag(G).reshape(-1,1)
@@ -32,8 +32,7 @@ def spectral_clustering(data, k_neighbors=10, optimal_k=2, gamma=1.0):
     Dist_sq = np.maximum(Dist_sq, 0) # clean up floating points
 
     Dist = np.sqrt(Dist_sq)
-    similarity_matrix = np.exp(-gamma * Dist_sq) #formula
-    print("Eucledian distance matrix Shape:", Dist.shape)
+    print("Euclidean distance matrix Shape:", Dist.shape)
 
     ## use knn to construct a weighted graph
     nearest = np.argsort(Dist, axis=1) # sorts the index of each distance increasingly
@@ -49,18 +48,17 @@ def spectral_clustering(data, k_neighbors=10, optimal_k=2, gamma=1.0):
     data = data[connected]
     A = A[np.ix_(connected, connected)] # filter both rows and columns, works because A is symmetric
 
-    plt.figure(figsize=(8, 8))
-    plt.scatter(data[:, 0], data[:, 1], s=10, c='black')
+    fig_graph, ax_graph = plt.subplots(figsize=(8, 8))
+    ax_graph.scatter(data[:, 0], data[:, 1], s=10, c='black')
 
     # draw a line for every connection in A
     for i in range(data.shape[0]):
         for j in range(i+1, data.shape[0]):  
             if A[i, j] > 0:  
-                plt.plot([data[i, 0], data[j, 0]], [data[i, 1], data[j, 1]], c='blue', alpha=0.5, linewidth=0.5)
+                ax_graph.plot([data[i, 0], data[j, 0]], [data[i, 1], data[j, 1]], c='blue', alpha=0.5, linewidth=0.5)
                 
 
-    plt.title(f"KNN Graph (k={k_neighbors})")
-    plt.show()
+    ax_graph.set_title(f"KNN Graph (k={k_neighbors})")
 
     ## compute the degree matrix
     degrees = np.sum(A, axis=0)
@@ -106,13 +104,20 @@ def spectral_clustering(data, k_neighbors=10, optimal_k=2, gamma=1.0):
     centroids, labels = numpy_kmeans(k_eigenvectors, optimal_k)
     print(f"Cluster sizes: {[np.sum(labels == i) for i in range(optimal_k)]}")
 
-    plt.scatter(data[:, 0], data[:, 1], c=labels)
-    plt.title("Spectral Clustering")
-    plt.show()
+    fig_result, ax_result = plt.subplots(figsize=(8, 8))
+    ax_result.scatter(data[:, 0], data[:, 1], c=labels)
+    ax_result.set_title("Spectral Clustering")
 
-    return labels, data
+    intermediates = {
+        'adjacency_matrix': A,
+        'eigenvalues': eigenvalues,
+        'k_eigenvectors': k_eigenvectors,
+        'degrees': degrees,
+    }
+
+    return labels, data, fig_graph, fig_result, intermediates
 
 if __name__ == "__main__":
-    # load the data
     data_csv = np.loadtxt('data_noisy.csv', delimiter=',')
-    spectral_clustering(data_csv)
+    labels, data, fig_graph, fig_result, _ = spectral_clustering(data_csv)
+    plt.show()

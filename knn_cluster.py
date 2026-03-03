@@ -12,13 +12,15 @@ def kmeans_clustering(data, k=2):
         # update centroids
         centroids = np.array([data[labels == i].mean(axis=0) for i in range(k)])
 
-    # plot the colored clusters
-    plt.scatter(data[:, 0], data[:, 1], c=labels, cmap='viridis', edgecolors='k')
-    plt.title("Classical K-Means Clustering")
-    plt.show()
+    fig, ax = plt.subplots(figsize=(8, 8))
+    ax.scatter(data[:, 0], data[:, 1], c=labels, cmap='viridis', edgecolors='k')
+    ax.set_title("Classical K-Means Clustering")
+    plt.close(fig)
 
-    return labels, centroids
+    return labels, centroids, fig
 
 if __name__ == "__main__":
     data_csv = np.loadtxt('data_noisy.csv', delimiter=',')
-    kmeans_clustering(data_csv, k=2)
+    labels, centroids, fig = kmeans_clustering(data_csv, k=2)
+    fig.show()
+    plt.show()
