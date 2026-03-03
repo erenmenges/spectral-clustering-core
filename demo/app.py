@@ -37,6 +37,8 @@ st.markdown(f"""<style>
 hr {{border-color:{SURFACE} !important; margin:0.4rem 0 !important;}}
 div.stButton > button {{width:100%;}}
 .block-container img {{max-height:60vh; object-fit:contain;}}
+.stAppDeployButton {{display:none;}}
+header[data-testid="stHeader"] {{visibility:hidden; height:0; padding:0;}}
 </style>""", unsafe_allow_html=True)
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
