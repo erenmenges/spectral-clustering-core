@@ -166,7 +166,9 @@ with st.sidebar:
         f'No scikit-learn.<br><br>'
         f'<span style="color:{TEXT};font-size:1.1rem;font-weight:600;">Eren Menges, 2026</span><br>'
         f'<a href="https://erenmenges.com" target="_blank" '
-        f'style="color:{ACCENT};text-decoration:none;font-size:1rem;">erenmenges.com</a></p>',
+        f'style="color:{ACCENT};text-decoration:underline;font-size:1rem;">erenmenges.com</a><br>'
+        f'<a href="https://github.com/erenmenges/spectral-clustering-core" target="_blank" '
+        f'style="color:{MUTED};text-decoration:underline;font-size:0.8rem;">GitHub</a></p>',
         unsafe_allow_html=True,
     )
 
