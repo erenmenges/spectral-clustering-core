@@ -10,6 +10,10 @@ Comes with an interactive Streamlit demo that walks through each step of the alg
 
 
 
+https://github.com/user-attachments/assets/62a1a420-f5e8-486f-a495-2f67d9b35fe3
+
+
+
 
 ## How It Works
 
@@ -78,4 +82,4 @@ No scikit-learn or PyTorch. The whole point was to implement it myself.
 
 ## Acknowledgments
 
-Written by Eren Menges, 2026. Some AI assistance was used for conceptual understanding and syntax lookup.
+Written by Eren Menges, 2026. Some AI assistance was used for conceptual understanding, syntax lookup, and coding the frontend.
